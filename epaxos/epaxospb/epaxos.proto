@@ -1,0 +1,72 @@
+syntax = "proto3";
+package epaxospb;
+
+import "gogoproto/gogo.proto";
+
+
+enum MessageType {
+    MsgPreAccept             = 0;
+    MsgPreAccpetResp            = 1;
+    MsgAccept = 2;
+    MsgAcceptResp = 3;
+    MsgBallotDismatch = 4;
+    MsgCommit = 5;
+}
+
+enum InstanceState {
+    PreAccepted = 0;
+    Accepted = 1;
+    Committed = 2;
+}
+
+enum RespRejectType {
+    BallotNotMatch = 0;
+    PreAcceptReject = 1;
+}
+
+enum CmdType {
+    CmdGet = 0;
+    CmdPut = 1;
+    CmdQGet = 3;
+}
+
+message Ballot {
+    uint64 epoch = 1;
+    uint64 node_id = 2;
+}
+
+message Message {
+
+    MessageType type = 1;
+    repeated Instance instance = 2;
+    uint64      to          = 3 [(gogoproto.casttype) = "TypeNodeID"];
+    uint64      from        = 4 [(gogoproto.casttype) = "TypeNodeID"];
+    Ballot ballot = 5 [(gogoproto.nullable) = false];
+    bool reject = 6;
+    RespRejectType rejectType = 7;
+}
+
+message Instance {
+
+    uint64 ID = 1 [(gogoproto.casttype) = "TypeInstanceID"];
+    Cmd cmd = 2;
+
+    map<uint64, uint64> deps = 3 [(gogoproto.castkey) = "TypeNodeID", (gogoproto.castvalue) = "TypeInstanceID"];
+    uint64 seq = 4;
+    uint64 nodeID = 5 [(gogoproto.casttype) = "TypeNodeID"];
+
+    InstanceState state = 6;
+
+}
+
+message Cmd {
+
+    string key = 1;
+    bytes value = 2;
+    CmdType type = 3;
+    uint64 requestID = 4;
+    uint64 connectionID = 5;
+}
+
+
+
